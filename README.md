@@ -1,4 +1,4 @@
-# music-world-tour
+# Music World Tour
 
 ## Project setup
 ```
