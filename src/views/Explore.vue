@@ -250,8 +250,11 @@ export default {
         intersects[0].object.parent instanceof Marker
       ) {
         if (INTERSECTED != intersects[0].object) {
-          if (INTERSECTED) INTERSECTED.parent.userData.scaleDown();
-          globeCanvas.classList.toggle("marker");
+          if (INTERSECTED) {
+            INTERSECTED.parent.userData.scaleDown();
+            globeCanvas.classList.remove("marker");
+          }
+          globeCanvas.classList.add("marker");
           controls.autoRotate = false;
           INTERSECTED = intersects[0].object;
           console.log(INTERSECTED.parent);
@@ -267,6 +270,7 @@ export default {
 
       renderer.render(scene, camera);
     }
+
 
     let previousDistance = 3;
     function globeEvent(){
