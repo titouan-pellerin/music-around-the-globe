@@ -272,7 +272,7 @@ export default {
     function globeEvent(){
       let markers = earth.children;
       let currentDistance = camera.position.distanceTo(controls.target);
-      if(currentDistance < 2.8 && currentDistance > 0.2)
+      if(currentDistance-previousDistance>0.1 || previousDistance-currentDistance<0.1)
         markers.forEach(marker => {
           if(marker instanceof Marker){
             if(previousDistance > currentDistance){
