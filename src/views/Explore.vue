@@ -112,6 +112,11 @@ export default {
         }, 0.001);
       };
 
+      this.userData.scale = function(size){
+        sphere.scale.x = size;
+        sphere.scale.z = size;
+      }
+
       this.add(sphere);
     }
     Marker.prototype = Object.create(THREE.Object3D.prototype);
@@ -211,6 +216,7 @@ export default {
       controls.update();
       window.addEventListener("resize", onResize);
       document.addEventListener("mousemove", onDocumentMouseMove);
+      controls.addEventListener("change", globeEvent);
       onResize();
     }
     function animate() {
@@ -261,6 +267,27 @@ export default {
 
       renderer.render(scene, camera);
     }
+
+    let previousDistance = 3;
+    function globeEvent(){
+      let markers = earth.children;
+      let currentDistance = camera.position.distanceTo(controls.target);
+      if(currentDistance-previousDistance>0.1 || previousDistance-currentDistance<0.1)
+        markers.forEach(marker => {
+          if(marker instanceof Marker){
+            if(previousDistance > currentDistance){
+              console.log(marker);
+              marker.userData.scale((currentDistance*0.5)*1/3);
+            }else{
+              console.log(marker);
+              marker.userData.scale((currentDistance*0.5)*1.33);
+            }
+            previousDistance = currentDistance;
+          }
+        });
+
+    }
+
   },
 };
 </script>
