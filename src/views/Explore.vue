@@ -261,7 +261,6 @@ export default {
 
       renderer.render(scene, camera);
     }
-
   },
 };
 </script>
