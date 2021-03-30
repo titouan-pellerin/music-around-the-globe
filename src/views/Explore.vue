@@ -216,7 +216,7 @@ export default {
       controls.update();
       window.addEventListener("resize", onResize);
       document.addEventListener("mousemove", onDocumentMouseMove);
-      controls.addEventListener("change", globeEvent);
+      //controls.addEventListener("change", globeEvent);
       onResize();
     }
     function animate() {
@@ -272,11 +272,13 @@ export default {
     }
 
 
-    let previousDistance = 3;
+    /*let previousDistance = 3;
     function globeEvent(){
       let markers = earth.children;
-      let currentDistance = camera.position.distanceTo(controls.target);
-      if(currentDistance-previousDistance>0.1 || previousDistance-currentDistance<0.1)
+      let currentDistance = Math.round(camera.position.distanceTo(controls.target) * 1000) / 1000;
+      if(currentDistance!=previousDistance)
+        console.log(currentDistance);
+        console.log(previousDistance);
         markers.forEach(marker => {
           if(marker instanceof Marker){
             if(previousDistance > currentDistance){
@@ -286,11 +288,12 @@ export default {
               console.log(marker);
               marker.userData.scale((currentDistance*0.5)*1.33);
             }
-            previousDistance = currentDistance;
           }
         });
+      previousDistance = currentDistance;
+      
 
-    }
+    }*/
 
   },
 };
