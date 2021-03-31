@@ -1,5 +1,5 @@
 <template>
-  <router-view />
+  <router-view/>
 </template>
 
 <style>
@@ -67,13 +67,17 @@ h6 {
   background-color: #fff;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.5s ease;
+.slide-fade-enter-active {
+  transition: all .3s ease-out;
 }
 
-.fade-enter-from,
-.fade-leave-to {
+.slide-fade-leave-active {
+  transition: all .5s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(20px);
   opacity: 0;
 }
 </style>

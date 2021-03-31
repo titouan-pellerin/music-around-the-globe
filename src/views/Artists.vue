@@ -34,12 +34,14 @@
         :name="artist.name"
       ></Artist>
     </main>
-    <footer v-if="selectedArtists[0]" class="artists-footer">
-      <router-link @click="saveSelectedArtists()" to="explore" class="btn launch-btn">
-        Lancer le tour du monde
-        <span class="selection-length">{{ selectedArtists.length }}</span>
-      </router-link>
-    </footer>
+    <transition name="slide-fade">
+      <footer v-if="selectedArtists[0]" class="artists-footer">
+        <router-link @click="saveSelectedArtists()" to="explore" class="btn launch-btn">
+          Lancer le tour du monde
+          <span class="selection-length">{{ selectedArtists.length }}</span>
+        </router-link>
+      </footer>
+    </transition>
   </div>
 </template>
 

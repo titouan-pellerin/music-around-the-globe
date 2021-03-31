@@ -1,24 +1,26 @@
 <template>
-  <label :data-related="relatedId" :for="id" href="#" class="artist">
-    <input class="artist-check" type="checkbox" :id="id" v-model="checked" />
-    <div class="artist-img-container">
-      <img class="artist-img" :src="image" />
-      <div class="img-layer">
-        <div class="img-overlay"></div>
-        <i class="fas fa-check"></i>
+  <transition appear name="slide-fade">
+    <label :data-related="relatedId" :for="id" href="#" class="artist">
+      <input class="artist-check" type="checkbox" :id="id" v-model="checked" />
+      <div class="artist-img-container">
+        <img class="artist-img" :src="image" />
+        <div class="img-layer">
+          <div class="img-overlay"></div>
+          <i class="fas fa-check"></i>
+        </div>
       </div>
-    </div>
-    <span class="artist-name">{{ name }}</span>
-  </label>
-  <Artist
-    v-for="artist in relatedArtists"
-    :key="artist.id"
-    :id="artist.id"
-    :image="artist.images[0].url"
-    :name="artist.name"
-    :relatedId="id"
-  >
-  </Artist>
+      <span class="artist-name">{{ name }}</span>
+    </label>
+  </transition>
+    <Artist
+      v-for="artist in relatedArtists"
+      :key="artist.id"
+      :id="artist.id"
+      :image="artist.images[0].url"
+      :name="artist.name"
+      :relatedId="id"
+    >
+    </Artist>
 </template>
 
 <script>

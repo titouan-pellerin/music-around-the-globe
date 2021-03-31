@@ -87,7 +87,7 @@ export default {
         self.add(sphere);
       });*/
 
-      sphere.position.y = 0.05;
+      sphere.position.y = Math.random() * (0.02 - 0.01) + 0.01 + 0.05;
 
       this.userData.scaleUp = function () {
         let scale = 1.01;
