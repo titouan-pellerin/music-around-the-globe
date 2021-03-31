@@ -64,8 +64,8 @@ export default {
       var texture = new THREE.TextureLoader().load(textureUrl);
       texture.flipY = false;
 
-      var material = new THREE.MeshPhongMaterial({
-        map: texture,
+      var material = new THREE.MeshStandardMaterial({
+        map: texture
       });
 
       var sphere = new THREE.Mesh(
