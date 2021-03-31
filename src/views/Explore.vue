@@ -16,16 +16,16 @@ export default {
   methods: {
     fetchArtists(ids) {
       let promises = [];
+
       for (let id of ids)
         promises.push(fetch(API_URL + "?id=" + id + "&ids=" + ids));
 
-      Promise.all(promises)
+      Promise.allSettled(promises)
         .then((responses) => {
           return Promise.all(
             responses.map((response) => {
-              return response.json().then((data) => {
-                console.log(data);
-                this.addMarkers(data);
+              response.value.json().then((artists) => {
+                this.addMarkers(artists);
               });
             })
           );
@@ -37,12 +37,7 @@ export default {
     addMarkers(artists) {
       for (let artist of artists) {
         if (artist.location)
-          if (artist.location.latLng)
-            earth.createMarker(
-              artist.location.latLng[1],
-              artist.location.latLng[0],
-              artist.images[2].url
-            );
+          if (artist.location.latLng) earth.createMarker(artist);
       }
     },
   },
@@ -65,7 +60,7 @@ export default {
       texture.flipY = false;
 
       var material = new THREE.MeshStandardMaterial({
-        map: texture
+        map: texture,
       });
 
       var sphere = new THREE.Mesh(
@@ -112,10 +107,10 @@ export default {
         }, 0.001);
       };
 
-      this.userData.scale = function(size){
+      this.userData.scale = function (size) {
         sphere.scale.x = size;
         sphere.scale.z = size;
-      }
+      };
 
       this.add(sphere);
     }
@@ -139,11 +134,11 @@ export default {
       this.add(sphere);
     }
     Earth.prototype = Object.create(THREE.Object3D.prototype);
-    Earth.prototype.createMarker = function (lat, lon, textureUrl) {
-      var marker = new Marker(textureUrl);
+    Earth.prototype.createMarker = function (artist) {
+      var marker = new Marker(artist.images[2].url);
 
-      var latRad = lat * (Math.PI / 180);
-      var lonRad = -lon * (Math.PI / 180);
+      var latRad = artist.location.latLng[1] * (Math.PI / 180);
+      var lonRad = -artist.location.latLng[0] * (Math.PI / 180);
       var r = this.userData.radius;
 
       marker.position.set(
@@ -264,13 +259,11 @@ export default {
         if (INTERSECTED) INTERSECTED.parent.userData.scaleDown();
         globeCanvas.classList.remove("marker");
         controls.autoRotate = true;
-
         INTERSECTED = null;
       }
 
       renderer.render(scene, camera);
     }
-
 
     /*let previousDistance = 3;
     function globeEvent(){
@@ -294,7 +287,6 @@ export default {
       
 
     }*/
-
   },
 };
 </script>
