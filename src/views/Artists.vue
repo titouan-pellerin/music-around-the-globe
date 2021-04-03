@@ -19,7 +19,7 @@
             class="artist-result"
             v-on:click="addArtistFromSearch(artist)"
           >
-            <img :src="artist.images[0].url" />
+            <img :src="artist.images[0] ? artist.images[2].url : '/artist-img.svg'" />
             <span>{{ artist.name }}</span>
           </div>
         </div>

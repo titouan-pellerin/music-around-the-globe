@@ -50,6 +50,7 @@ export default {
     const globeCanvas = document.getElementById("globeCanvas");
     var scene, camera, raycaster, renderer, controls;
     let INTERSECTED;
+    let previousDistance = 3;
     const mouse = new THREE.Vector2();
 
     /*Rediriger si il n'y a aucun artistes sélectionnés */
@@ -70,7 +71,7 @@ export default {
       });
 
       var sphere = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.02, 0.02, 0, 100),
+        new THREE.CylinderGeometry(0.03, 0.03, 0, 100),
         material
       );
 
@@ -119,7 +120,12 @@ export default {
     }
     Earth.prototype = Object.create(THREE.Object3D.prototype);
     Earth.prototype.createMarker = function (artist) {
-      var marker = new Marker(artist.images[2].url);
+      console.log(artist);
+      let url;
+      if (artist.images[0]) url = artist.images[2].url;
+      else url = "/artist-img.svg";
+
+      var marker = new Marker(url);
 
       var latRad = artist.location.latLng[1] * (Math.PI / 180);
       var lonRad = -artist.location.latLng[0] * (Math.PI / 180);
@@ -132,6 +138,7 @@ export default {
       );
       marker.rotation.set(0.0, -lonRad, latRad - Math.PI * 0.5);
       marker.userData.artist = artist;
+
       this.add(marker);
     };
 
@@ -172,19 +179,8 @@ export default {
         earth = earthMesh;
         animate();
       });
-      //earth = new Earth(mesh);
 
-      /*if (localStorage.globeArtists) {
-        let globeArtists = JSON.parse(localStorage.globeArtists);
-        for (let globeArtist of globeArtists) {
-          earth.createMarker(
-            globeArtist.location.latLng[0],
-            globeArtist.location.latLng[1]
-          );
-        }
-      }*/
       scene.add(camera);
-      //scene.add(earth);
 
       controls.update();
       window.addEventListener("resize", onResize);
@@ -212,10 +208,11 @@ export default {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
-
     function render() {
+      let markers = earth.children;
+
       raycaster.setFromCamera(mouse, camera);
-      var intersects = raycaster.intersectObjects(earth.children, true);
+      var intersects = raycaster.intersectObjects(markers, true);
       if (
         intersects.length > 0 &&
         intersects[0].object.parent instanceof Marker
@@ -238,6 +235,14 @@ export default {
         controls.autoRotate = true;
         INTERSECTED = null;
       }
+
+      let currentDistance = Math.round(camera.position.distanceTo(controls.target) * 1000) / 1000;
+        if(!INTERSECTED && previousDistance != currentDistance)
+          markers.forEach((marker) => {
+            if (marker instanceof Marker)
+              marker.userData.scale(currentDistance * 0.3 * 1.33);
+          });
+      previousDistance = currentDistance;
       renderer.render(scene, camera);
     }
 
@@ -270,21 +275,12 @@ export default {
 
     function loadMarkers() {
       let ids = JSON.parse(localStorage.selectedArtists);
-      let promises = [];
 
-      for (let id of ids)
-        promises.push(fetch(API_URL + "?id=" + id + "&ids=" + ids));
-
-      return Promise.allSettled(promises)
-        .then((responses) => {
-          return Promise.all(
-            responses.map((response) => {
-              return response.value.json().then((artists) => {
-                console.log(artists);
-                return artists;
-              });
-            })
-          );
+      return fetch(API_URL + "?ids=" + ids)
+        .then((response) => {
+          return response.json().then((artists) => {
+            return artists;
+          });
         })
         .catch((err) => {
           console.log(err);
@@ -299,10 +295,12 @@ export default {
         let earth = new Earth(
           new THREE.Mesh(new THREE.SphereBufferGeometry(1, 100, 100), result[0])
         );
-        for (let artists of result[1])
-          for (let artist of artists)
-            if (artist.location)
-              if (artist.location.latLng) earth.createMarker(artist);
+        result[1] = result[1].flat();
+        console.log(result[1]);
+
+        for (let artist of result[1])
+          if (artist.location)
+            if (artist.location.latLng) earth.createMarker(artist);
 
         return earth;
       });
@@ -319,16 +317,14 @@ export default {
           if(marker instanceof Marker){
             if(previousDistance > currentDistance){
               console.log(marker);
-              marker.userData.scale((currentDistance*0.5)*1/3);
+              marker.userData.scale((currentDistance*0.3)*1/3);
             }else{
               console.log(marker);
-              marker.userData.scale((currentDistance*0.5)*1.33);
+              marker.userData.scale((currentDistance*0.3)*1.33);
             }
           }
         });
       previousDistance = currentDistance;
-      
-
     }*/
   },
 };
@@ -375,8 +371,8 @@ canvas.loading {
   height: 12px;
   width: 12px;
   border-radius: 12px;
-  -webkit-animation: loader10g 3s ease-in-out infinite;
-  animation: loader10g 3s ease-in-out infinite;
+  -webkit-animation: loader10g 1s ease-in-out infinite;
+  animation: loader10g 1s ease-in-out infinite;
 }
 
 .spin {
@@ -384,8 +380,8 @@ canvas.loading {
   width: 12px;
   height: 12px;
   border-radius: 12px;
-  -webkit-animation: loader10m 3s ease-in-out infinite;
-  animation: loader10m 3s ease-in-out infinite;
+  -webkit-animation: loader10m 1s ease-in-out infinite;
+  animation: loader10m 1s ease-in-out infinite;
 }
 
 .spin:after {
@@ -396,8 +392,8 @@ canvas.loading {
   height: 10px;
   width: 10px;
   border-radius: 10px;
-  -webkit-animation: loader10d 3s ease-in-out infinite;
-  animation: loader10d 3s ease-in-out infinite;
+  -webkit-animation: loader10d 1s ease-in-out infinite;
+  animation: loader10d 1s ease-in-out infinite;
 }
 
 @-webkit-keyframes loader10g {
