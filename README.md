@@ -6,7 +6,7 @@ Ce dépôt correspond à l'interface utilisateur. L'interface utilisateur récup
 [Dépôt de l'API](https://github.com/titouan-pellerin/music-around-the-globe-api)
 
 Une première démonstration de l'application est disponible en suivant ce lien :
-[http://globe.titouanpellerin.info](http://globe.titouanpellerin.info)
+[http://music-around-the-globe.herokuapp.com/](http://music-around-the-globe.herokuapp.com/)
 
 Le projet est encore en cours de développement. L'étape sur laquelle je travaille actuellement, correspond à l'affichage des informations d'un artiste sur lequel on cliquerait depuis le globe 3D.
 
