@@ -12,19 +12,19 @@
       <span class="artist-name">{{ name }}</span>
     </label>
   </transition>
-    <Artist
-      v-for="artist in relatedArtists"
-      :key="artist.id"
-      :id="artist.id"
-      :image="artist.images[0].url"
-      :name="artist.name"
-      :relatedId="id"
-    >
-    </Artist>
+  <Artist
+    v-for="artist in relatedArtists"
+    :key="artist.id"
+    :id="artist.id"
+    :image="artist.images[0] ? artist.images[0].url : '/artist-img.svg'"
+    :name="artist.name"
+    :relatedId="id"
+  >
+  </Artist>
 </template>
 
 <script>
-const API_URL = "http://localhost:8080/";
+import { API_URL } from '@/assets/variables.js';
 
 export default {
   name: "Artist",
@@ -37,7 +37,7 @@ export default {
   data() {
     return {
       checked: Number,
-      relatedArtists: [],
+      relatedArtists: []
     };
   },
   watch: {
@@ -45,27 +45,32 @@ export default {
       let parent = this.getParent("Home");
       if (checked) {
         this.showRelatedArtists(this.id);
-        parent.addSelectedArtist(this.id);
         this.fetchPreview(this.id);
+        parent.exploreArtists.forEach(artist =>{
+          if(artist.id == this.id) parent.exploreArtists.splice(parent.exploreArtists.indexOf(artist), 1);
+        })
+        parent.counter++;
       } else {
-        parent.removeSelectedArtist(this.id);
+        parent.removeExploreArtists(this.relatedArtists);
+        parent.counter--;
       }
     },
   },
   methods: {
     showRelatedArtists(id) {
       if (this.relatedArtists.length == 0) {
-        let relatedArtists = [];
         fetch(API_URL + "artist/related/" + id).then((response) => {
           response.json().then((artists) => {
             artists.forEach((artist) => {
-              if (!document.getElementById(artist.id))
-                relatedArtists.push(artist);
+              if (!document.getElementById(artist.id)) {
+                this.relatedArtists.push(artist);
+                this.fetchLocation(this.relatedArtists.indexOf(artist));
+              }
             });
-            this.relatedArtists = relatedArtists;
+            this.getParent("Home").addExploreArtists(this.relatedArtists);
           });
         });
-      }
+      } else this.getParent("Home").addExploreArtists(this.relatedArtists);
     },
     getParent(name) {
       let p = this.$parent;
@@ -81,16 +86,32 @@ export default {
     fetchPreview(id) {
       fetch(API_URL + "artist/preview/" + id).then((response) => {
         response.json().then((preview) => {
-          if(preview.preview_url){
-            this.getParent('Home').togglePreview(preview);
+          if (preview.preview_url) {
+            this.getParent("Home").togglePreview(preview);
           }
         });
       });
     },
+    async fetchLocation(index){
+      let parent = this.getParent('Home');
+      if(parent.locationLoading) await this.wait(1000);
+      parent.locationLoading = true;
+      console.log(this.relatedArtists[index]);
+      fetch(API_URL + "artist/location/" + this.relatedArtists[index].name).then(response => {
+        response.json().then(location => {
+          this.relatedArtists[index].location = location;
+          parent.locationLoading = false;
+        })
+      })
+    },
+    wait(milliseconds) {
+    return new Promise(resolve => setTimeout(resolve, milliseconds));
+}
+
   },
-  mounted(){
-    this.audio = this.getParent('Home').audio;
-  }
+  mounted() {
+    this.audio = this.getParent("Home").audio;
+  },
 };
 </script>
 

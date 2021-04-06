@@ -1,15 +1,18 @@
 <template>
-  <div class="spin-container loading">
-    <div class="spin"></div>
+  <div class="explore selected">
+    <div class="spin-container loading">
+      <div class="spin"></div>
+    </div>
+    <canvas class="loading" id="globeCanvas"></canvas>
+    <div class="artist-container"></div>
   </div>
-  <canvas class="loading" id="globeCanvas"></canvas>
 </template>
 
 <script>
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
-const API_URL = "http://localhost:8080/artists/explore";
+//const API_URL = "http://localhost:8080/artists/explore";
 
 let earth;
 
@@ -65,7 +68,8 @@ export default {
 
       var texture = new THREE.TextureLoader().load(textureUrl);
       texture.flipY = false;
-
+      texture.wrapS = THREE.RepeatWrapping;
+      texture.repeat.x = -1;
       var material = new THREE.MeshStandardMaterial({
         map: texture,
       });
@@ -115,12 +119,12 @@ export default {
 
       this.userData.radius = 1;
 
-      console.log(mesh);
+      //console.log(mesh);
       this.add(mesh);
     }
     Earth.prototype = Object.create(THREE.Object3D.prototype);
     Earth.prototype.createMarker = function (artist) {
-      console.log(artist);
+      //console.log(artist);
       let url;
       if (artist.images[0]) url = artist.images[2].url;
       else url = "/artist-img.svg";
@@ -208,6 +212,13 @@ export default {
       mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
+
+    function onDocumentMouseDown(event) {
+      event.preventDefault();
+      console.log(event);
+      console.log(INTERSECTED.parent.userData.artist);
+    }
+
     function render() {
       let markers = earth.children;
 
@@ -224,24 +235,27 @@ export default {
           }
           globeCanvas.classList.add("marker");
           controls.autoRotate = false;
+          document.addEventListener("mousedown", onDocumentMouseDown, false);
           INTERSECTED = intersects[0].object;
-          console.log(INTERSECTED.parent);
           INTERSECTED.parent.userData.scaleUp();
-          console.log(INTERSECTED.parent.userData.artist);
+          //console.log(INTERSECTED.parent.userData.artist);
         }
       } else {
         if (INTERSECTED) INTERSECTED.parent.userData.scaleDown();
         globeCanvas.classList.remove("marker");
         controls.autoRotate = true;
+
         INTERSECTED = null;
+        document.removeEventListener("mousedown", onDocumentMouseDown);
       }
 
-      let currentDistance = Math.round(camera.position.distanceTo(controls.target) * 1000) / 1000;
-        if(!INTERSECTED && previousDistance != currentDistance)
-          markers.forEach((marker) => {
-            if (marker instanceof Marker)
-              marker.userData.scale(currentDistance * 0.3 * 1.33);
-          });
+      let currentDistance =
+        Math.round(camera.position.distanceTo(controls.target) * 1000) / 1000;
+      if (!INTERSECTED && previousDistance != currentDistance)
+        markers.forEach((marker) => {
+          if (marker instanceof Marker)
+            marker.userData.scale(currentDistance * 0.3 * 1.33);
+        });
       previousDistance = currentDistance;
       renderer.render(scene, camera);
     }
@@ -273,32 +287,14 @@ export default {
       });
     }
 
-    function loadMarkers() {
-      let ids = JSON.parse(localStorage.selectedArtists);
-
-      return fetch(API_URL + "?ids=" + ids)
-        .then((response) => {
-          return response.json().then((artists) => {
-            return artists;
-          });
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    }
-
     function loadEarth() {
-      const promises = [loadMaterial(), loadMarkers()];
-      return Promise.all(promises).then((result) => {
+      return Promise.resolve(loadMaterial()).then((result) => {
         document.querySelector(".spin-container").classList.remove("loading");
         document.querySelector("canvas").classList.remove("loading");
         let earth = new Earth(
-          new THREE.Mesh(new THREE.SphereBufferGeometry(1, 100, 100), result[0])
+          new THREE.Mesh(new THREE.SphereBufferGeometry(1, 100, 100), result)
         );
-        result[1] = result[1].flat();
-        console.log(result[1]);
-
-        for (let artist of result[1])
+        for (let artist of JSON.parse(localStorage.exploreArtists))
           if (artist.location)
             if (artist.location.latLng) earth.createMarker(artist);
 
@@ -333,6 +329,10 @@ export default {
 <style>
 body {
   overflow: hidden;
+}
+
+.explore {
+  display: flex;
 }
 
 canvas {
@@ -499,5 +499,14 @@ canvas.loading {
   100% {
     background-color: rgba(255, 255, 255, 0.2);
   }
+}
+
+.selected .artist-container {
+  width: 30vw;
+  height: 100vh;
+}
+
+.selected canvas {
+  width: 70vw;
 }
 </style>

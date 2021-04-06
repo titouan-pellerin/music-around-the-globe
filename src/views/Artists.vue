@@ -19,7 +19,9 @@
             class="artist-result"
             v-on:click="addArtistFromSearch(artist)"
           >
-            <img :src="artist.images[0] ? artist.images[2].url : '/artist-img.svg'" />
+            <img
+              :src="artist.images[0] ? (artist.images[2] ? artist.images[2].url : artist.images[0].url) : '/artist-img.svg'"
+            />
             <span>{{ artist.name }}</span>
           </div>
         </div>
@@ -30,15 +32,19 @@
         v-for="artist in artists"
         :key="artist.id"
         :id="artist.id"
-        :image="artist.images[2].url"
+        :image="artist.images[0] ? (artist.images[2] ? artist.images[2].url : artist.images[0].url) : '/artist-img.svg'"
         :name="artist.name"
       ></Artist>
     </main>
     <transition name="slide-fade">
-      <footer v-if="selectedArtists[0]" class="artists-footer">
-        <router-link @click="saveSelectedArtists()" to="explore" class="btn launch-btn">
-          Lancer le tour du monde
-          <span class="selection-length">{{ selectedArtists.length }}</span>
+      <footer v-if="counter > 0" class="artists-footer">
+        <router-link
+          @click="saveExploreArtists($event)"
+          to="explore"
+          class="btn launch-btn"
+        >
+          <span class="launch-text">{{locationLoading ? 'Chargement...' : 'Lancer le tour du monde'}}</span>
+          <span class="selection-length">{{ counter }}</span>
         </router-link>
       </footer>
     </transition>
@@ -48,8 +54,7 @@
 <script>
 // @ is an alias to /src
 import Artist from "@/components/Artist.vue";
-
-const API_URL = "http://localhost:8080/artists";
+import { API_URL } from '@/assets/variables.js';
 
 export default {
   name: "Home",
@@ -59,17 +64,19 @@ export default {
   data() {
     return {
       artists: [],
-      selectedArtists: [],
+      counter: 0,
+      exploreArtists: [],
       query: "",
       searchedArtists: [],
       audio: null,
+      locationLoading: false,
     };
   },
   watch: {
     query(query) {
       let inputContainer = document.querySelector(".input-container");
       if (query.trim().length > 0)
-        fetch(API_URL + "/search/" + query).then((response) =>
+        fetch(API_URL + "artists/search/" + query).then((response) =>
           response.json().then((artists) => {
             inputContainer.classList.add("open");
             console.log(artists);
@@ -80,15 +87,17 @@ export default {
     },
   },
   methods: {
-    addSelectedArtist(id) {
-      this.selectedArtists.push(id);
+    addExploreArtists(artists) {
+      this.exploreArtists = this.exploreArtists.concat(artists);
     },
-    removeSelectedArtist(id) {
+    removeExploreArtists(artists) {
       this.togglePreview();
-      this.selectedArtists.splice(this.selectedArtists.indexOf(id), 1);
+      artists.forEach((artist) => {
+        this.exploreArtists.splice(this.exploreArtists.indexOf(artist), 1);
+      });
     },
     fetchArtists() {
-      fetch(API_URL).then((response) =>
+      fetch(API_URL + "artists").then((response) =>
         response.json().then((artists) => {
           this.artists = artists;
         })
@@ -108,9 +117,10 @@ export default {
         this.audio.play();
       }
     },
-    saveSelectedArtists(){
-      localStorage.selectedArtists = JSON.stringify(this.selectedArtists);
-    }
+    saveExploreArtists(e) {
+      if (this.locationLoading) e.preventDefault();
+      else localStorage.exploreArtists = JSON.stringify(this.exploreArtists);
+    },
   },
   mounted() {
     this.fetchArtists();
@@ -224,7 +234,6 @@ export default {
   flex-wrap: wrap;
   justify-content: center;
   max-width: 1800px;
-
 }
 
 .artists-footer {
