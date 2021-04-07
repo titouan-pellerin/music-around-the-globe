@@ -1,7 +1,6 @@
 <template>
-  <div class="explore selected">
+  <div class="explore">
     <div class="spin-container loading">
-      <div class="spin"></div>
     </div>
     <canvas class="loading" id="globeCanvas"></canvas>
     <div class="artist-container"></div>
@@ -10,6 +9,7 @@
 
 <script>
 import * as THREE from "three";
+import * as lottie from "lottie-web";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
 //const API_URL = "http://localhost:8080/artists/explore";
@@ -62,6 +62,14 @@ export default {
       this.fetchArtists(JSON.parse(localStorage.selectedArtists));
       //localStorage.removeItem('selectedArtists');
     }*/
+
+    lottie.loadAnimation({
+      container: document.querySelector('.spin-container'), // the dom element that will contain the animation
+      renderer: "svg",
+      loop: true,
+      autoplay: true,
+      path: "/data.json", // the path to the animation json
+    });
 
     function Marker(textureUrl) {
       THREE.Object3D.call(this);
@@ -215,8 +223,10 @@ export default {
 
     function onDocumentMouseDown(event) {
       event.preventDefault();
-      console.log(event);
+      document.removeEventListener("mousemove", onDocumentMouseMove);
       console.log(INTERSECTED.parent.userData.artist);
+      controls.enabled = false;
+      document.removeEventListener("mousedown", onDocumentMouseDown);
     }
 
     function render() {
@@ -355,150 +365,10 @@ canvas.loading {
   width: 100vw;
   height: 100vh;
   display: none;
-  justify-content: center;
-  align-items: center;
 }
 
-.loading.spin-container {
-  display: flex;
-}
-
-.spin:before {
-  content: "";
-  position: absolute;
-  top: 0px;
-  left: -25px;
-  height: 12px;
-  width: 12px;
-  border-radius: 12px;
-  -webkit-animation: loader10g 1s ease-in-out infinite;
-  animation: loader10g 1s ease-in-out infinite;
-}
-
-.spin {
-  position: relative;
-  width: 12px;
-  height: 12px;
-  border-radius: 12px;
-  -webkit-animation: loader10m 1s ease-in-out infinite;
-  animation: loader10m 1s ease-in-out infinite;
-}
-
-.spin:after {
-  content: "";
-  position: absolute;
-  top: 0px;
-  left: 25px;
-  height: 10px;
-  width: 10px;
-  border-radius: 10px;
-  -webkit-animation: loader10d 1s ease-in-out infinite;
-  animation: loader10d 1s ease-in-out infinite;
-}
-
-@-webkit-keyframes loader10g {
-  0% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  25% {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  50% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  75% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  100% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-@keyframes loader10g {
-  0% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  25% {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  50% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  75% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  100% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
-@-webkit-keyframes loader10m {
-  0% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  25% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  75% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  100% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-@keyframes loader10m {
-  0% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  25% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  75% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  100% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-
-@-webkit-keyframes loader10d {
-  0% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  25% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  75% {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  100% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-}
-@keyframes loader10d {
-  0% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  25% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  50% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
-  75% {
-    background-color: rgba(255, 255, 255, 1);
-  }
-  100% {
-    background-color: rgba(255, 255, 255, 0.2);
-  }
+.spin-container.loading{
+  display: block;
 }
 
 .selected .artist-container {
