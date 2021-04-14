@@ -28,6 +28,7 @@
       </div>
     </header>
     <main class="artists-list">
+      <div class="loader" v-if="!artists">Chargement...</div>
       <Artist
         v-for="artist in artists"
         :key="artist.id"

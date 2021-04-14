@@ -1,7 +1,6 @@
 <template>
   <div class="explore">
-    <div class="spin-container loading">
-    </div>
+    <div class="spin-container loading"></div>
     <canvas class="loading" id="globeCanvas"></canvas>
     <div class="artist-container"></div>
   </div>
@@ -9,43 +8,14 @@
 
 <script>
 import * as THREE from "three";
+import * as TWEEN from "@tweenjs/tween.js";
 import * as lottie from "lottie-web";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-
-//const API_URL = "http://localhost:8080/artists/explore";
 
 let earth;
 
 export default {
   name: "Explore",
-  /*methods: {
-    fetchArtists(ids) {
-      let promises = [];
-
-      for (let id of ids)
-        promises.push(fetch(API_URL + "?id=" + id + "&ids=" + ids));
-
-      Promise.allSettled(promises)
-        .then((responses) => {
-          return Promise.all(
-            responses.map((response) => {
-              response.value.json().then((artists) => {
-                this.addMarkers(artists);
-              });
-            })
-          );
-        })
-        .catch((err) => {
-          console.log(err);
-        });
-    },
-    addMarkers(artists) {
-      for (let artist of artists) {
-        if (artist.location)
-          if (artist.location.latLng) earth.createMarker(artist);
-      }
-    }
-  },*/
   mounted() {
     /**
      * Variables
@@ -64,11 +34,11 @@ export default {
     }*/
 
     lottie.loadAnimation({
-      container: document.querySelector('.spin-container'), // the dom element that will contain the animation
+      container: document.querySelector(".spin-container"),
       renderer: "svg",
       loop: true,
       autoplay: true,
-      path: "/data.json", // the path to the animation json
+      path: "/data.json",
     });
 
     function Marker(textureUrl) {
@@ -124,15 +94,11 @@ export default {
 
     function Earth(mesh) {
       THREE.Object3D.call(this);
-
       this.userData.radius = 1;
-
-      //console.log(mesh);
       this.add(mesh);
     }
     Earth.prototype = Object.create(THREE.Object3D.prototype);
     Earth.prototype.createMarker = function (artist) {
-      //console.log(artist);
       let url;
       if (artist.images[0]) url = artist.images[2].url;
       else url = "/artist-img.svg";
@@ -173,7 +139,7 @@ export default {
       controls.dampingFactor = 0.05;
       controls.enablePan = false;
       controls.screenSpacePanning = false;
-      controls.minDistance = 1.5;
+      controls.minDistance = 1.7;
       controls.maxDistance = 3;
       controls.autoRotate = true;
       controls.autoRotateSpeed = 0.5;
@@ -198,8 +164,6 @@ export default {
       window.addEventListener("resize", onResize);
       document.addEventListener("mousemove", onDocumentMouseMove);
 
-      //controls.addEventListener("change", globeEvent);
-
       onResize();
     }
 
@@ -207,12 +171,18 @@ export default {
       requestAnimationFrame(animate);
       controls.update();
       render();
+      TWEEN.update();
     }
 
-    function onResize() {
-      camera.aspect = window.innerWidth / window.innerHeight;
+    function onResize(e, width, height) {
+      width = width != null ? width : window.innerWidth;
+      height = height != null ? height : window.innerHeight;
+      console.log(width);
+      console.log(height);
+
+      camera.aspect = width / height;
       camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setSize(width, height);
     }
 
     function onDocumentMouseMove(event) {
@@ -224,8 +194,32 @@ export default {
     function onDocumentMouseDown(event) {
       event.preventDefault();
       document.removeEventListener("mousemove", onDocumentMouseMove);
+      globeCanvas.classList.add("reduced");
+      document.querySelector(".artist-container").classList.add("expanded");
+      controls.autoRotate = false;
+
       console.log(INTERSECTED.parent.userData.artist);
-      controls.enabled = false;
+
+      new TWEEN.Tween({
+        x: camera.position.x,
+        y: camera.position.y,
+        z: camera.position.z,
+      })
+        .to(
+          {
+            x: INTERSECTED.parent.position.x,
+            y: INTERSECTED.parent.position.y,
+            z: INTERSECTED.parent.position.z,
+          },
+          2000
+        )
+        .easing(TWEEN.Easing.Quadratic.InOut)
+        .onUpdate((d) => {
+          camera.position.set(d.x, d.y, d.z);
+        })
+        .start();
+
+      console.log(INTERSECTED.parent);
       document.removeEventListener("mousedown", onDocumentMouseDown);
     }
 
@@ -248,7 +242,6 @@ export default {
           document.addEventListener("mousedown", onDocumentMouseDown, false);
           INTERSECTED = intersects[0].object;
           INTERSECTED.parent.userData.scaleUp();
-          //console.log(INTERSECTED.parent.userData.artist);
         }
       } else {
         if (INTERSECTED) INTERSECTED.parent.userData.scaleDown();
@@ -276,9 +269,25 @@ export default {
       });
     }
 
+    function loadCloudsMaterial() {
+      const textures = {
+        map: "clouds.png",
+      };
+      let params = {};
+
+      const promises = Object.keys(textures).map((key) => {
+        return loadTexture(textures[key]).then((texture) => {
+          params[key] = texture;
+        });
+      });
+      return Promise.all(promises).then(() => {
+        return new THREE.MeshPhongMaterial(params);
+      });
+    }
+
     function loadMaterial() {
       const textures = {
-        map: "/earth.jpg",
+        map: "/earth2.jpg",
         specularMap: "/specular.png",
         displacementMap: "/bump2.jpg",
       };
@@ -298,40 +307,34 @@ export default {
     }
 
     function loadEarth() {
-      return Promise.resolve(loadMaterial()).then((result) => {
-        document.querySelector(".spin-container").classList.remove("loading");
-        document.querySelector("canvas").classList.remove("loading");
-        let earth = new Earth(
-          new THREE.Mesh(new THREE.SphereBufferGeometry(1, 100, 100), result)
-        );
-        for (let artist of JSON.parse(localStorage.exploreArtists))
-          if (artist.location)
-            if (artist.location.latLng) earth.createMarker(artist);
+      return Promise.all([loadMaterial(), loadCloudsMaterial()]).then(
+        (result) => {
+          document.querySelector(".spin-container").classList.remove("loading");
+          document.querySelector("canvas").classList.remove("loading");
+          let earth = new Earth(
+            new THREE.Mesh(
+              new THREE.SphereBufferGeometry(1, 100, 100),
+              result[0]
+            )
+          );
+          let clouds = new THREE.Mesh(
+            new THREE.SphereGeometry(1.03, 100, 100),
+            new THREE.MeshPhongMaterial({
+              map: THREE.ImageUtils.loadTexture("/clouds.png"),
+              transparent: true,
+            })
+          );
 
-        return earth;
-      });
+          earth.add(clouds);
+
+          for (let artist of JSON.parse(localStorage.exploreArtists))
+            if (artist.location)
+              if (artist.location.latLng) earth.createMarker(artist);
+
+          return earth;
+        }
+      );
     }
-
-    /*let previousDistance = 3;
-    function globeEvent(){
-      let markers = earth.children;
-      let currentDistance = Math.round(camera.position.distanceTo(controls.target) * 1000) / 1000;
-      if(currentDistance!=previousDistance)
-        console.log(currentDistance);
-        console.log(previousDistance);
-        markers.forEach(marker => {
-          if(marker instanceof Marker){
-            if(previousDistance > currentDistance){
-              console.log(marker);
-              marker.userData.scale((currentDistance*0.3)*1/3);
-            }else{
-              console.log(marker);
-              marker.userData.scale((currentDistance*0.3)*1.33);
-            }
-          }
-        });
-      previousDistance = currentDistance;
-    }*/
   },
 };
 </script>
@@ -347,6 +350,8 @@ body {
 
 canvas {
   cursor: grab;
+  margin-left: 0;
+  transition: all ease-in-out 2s;
 }
 
 canvas:active {
@@ -361,22 +366,29 @@ canvas.loading {
   display: none;
 }
 
+canvas.reduced {
+  margin-left: -30%;
+}
+
 .spin-container {
   width: 100vw;
   height: 100vh;
   display: none;
 }
 
-.spin-container.loading{
+.spin-container.loading {
   display: block;
 }
 
-.selected .artist-container {
-  width: 30vw;
+.artist-container {
+  width: 0;
   height: 100vh;
+  z-index: 100;
+  background: var(--background-color);
+  transition: all ease-in-out 2s;
 }
 
-.selected canvas {
-  width: 70vw;
+.artist-container.expanded {
+  width: 30%;
 }
 </style>
