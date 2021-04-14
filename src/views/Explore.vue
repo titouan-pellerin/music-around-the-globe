@@ -287,9 +287,9 @@ export default {
 
     function loadMaterial() {
       const textures = {
-        map: "/earth2.jpg",
+        map: "/earth.jpg",
         specularMap: "/specular.png",
-        displacementMap: "/bump2.jpg",
+        displacementMap: "/bump.jpg",
       };
       let params = {};
 
