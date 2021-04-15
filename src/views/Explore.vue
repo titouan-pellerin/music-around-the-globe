@@ -8,7 +8,7 @@
 
 <script>
 import * as THREE from "three";
-const TWEEN = require('@tweenjs/tween.js')
+import * as TWEEN from '@tweenjs/tween.js'
 import * as lottie from "lottie-web";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
