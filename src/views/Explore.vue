@@ -8,7 +8,7 @@
 
 <script>
 import * as THREE from "three";
-import * as TWEEN from '@tweenjs/tween.js'
+import * as TWEEN from "@tweenjs/tween.js";
 import * as lottie from "lottie-web";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 
@@ -307,22 +307,19 @@ export default {
     }
 
     function loadEarth() {
-      return Promise.all([loadMaterial(), loadCloudsMaterial()]).then(
+      return Promise.all([loadCloudsMaterial(), loadMaterial()]).then(
         (result) => {
           document.querySelector(".spin-container").classList.remove("loading");
           document.querySelector("canvas").classList.remove("loading");
           let earth = new Earth(
             new THREE.Mesh(
               new THREE.SphereBufferGeometry(1, 100, 100),
-              result[0]
+              result[1]
             )
           );
           let clouds = new THREE.Mesh(
             new THREE.SphereGeometry(1.03, 100, 100),
-            new THREE.MeshPhongMaterial({
-              map: THREE.ImageUtils.loadTexture("/clouds.png"),
-              transparent: true,
-            })
+            result[0]
           );
 
           earth.add(clouds);
