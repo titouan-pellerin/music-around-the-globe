@@ -271,7 +271,7 @@ export default {
 
     function loadCloudsMaterial() {
       const textures = {
-        map: "clouds.png",
+        map: "/clouds.png",
       };
       let params = {};
 
@@ -280,6 +280,9 @@ export default {
           params[key] = texture;
         });
       });
+
+      params.transparent = true;
+
       return Promise.all(promises).then(() => {
         return new THREE.MeshPhongMaterial(params);
       });
