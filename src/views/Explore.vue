@@ -10,7 +10,8 @@
 import * as THREE from "three";
 import * as TWEEN from "@tweenjs/tween.js";
 import * as lottie from "lottie-web";
-import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { OrbitControls } from "@/assets/OrbitControls";
+
 
 let earth;
 

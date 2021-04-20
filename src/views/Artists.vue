@@ -1,61 +1,75 @@
 <template>
-  <div class="artists style-dark">
-    <header>
-      <h1>Quels sont vos artistes préférés ?</h1>
-      <p class="caption">
-        Sélectionnez les artistes que vous écoutez pour affiner la recherche.
-      </p>
-      <div class="input-container">
-        <input
-          class="search-input"
-          placeholder="Rechercher un artiste"
-          type="text"
-          v-model="query"
-        />
-        <div v-if="searchedArtists[0]" class="search-results">
-          <div
-            v-for="artist in searchedArtists"
-            :key="artist.id"
-            class="artist-result"
-            v-on:click="addArtistFromSearch(artist)"
-          >
-            <img
-              :src="artist.images[0] ? (artist.images[2] ? artist.images[2].url : artist.images[0].url) : '/artist-img.svg'"
-            />
-            <span>{{ artist.name }}</span>
+    <div class="artists style-dark">
+      <header>
+        <h1>Quels sont vos artistes préférés ?</h1>
+        <p class="caption">
+          Sélectionnez les artistes que vous écoutez pour affiner la recherche.
+        </p>
+        <div class="input-container">
+          <input
+            class="search-input"
+            placeholder="Rechercher un artiste"
+            type="text"
+            v-model="query"
+          />
+          <div v-if="searchedArtists[0]" class="search-results">
+            <div
+              v-for="artist in searchedArtists"
+              :key="artist.id"
+              class="artist-result"
+              v-on:click="addArtistFromSearch(artist)"
+            >
+              <img
+                :src="
+                  artist.images[0]
+                    ? artist.images[2]
+                      ? artist.images[2].url
+                      : artist.images[0].url
+                    : '/artist-img.svg'
+                "
+              />
+              <span>{{ artist.name }}</span>
+            </div>
           </div>
         </div>
-      </div>
-    </header>
-    <main class="artists-list">
-      <div class="loader" v-if="!artists[0]">Chargement...</div>
-      <Artist
-        v-for="artist in artists"
-        :key="artist.id"
-        :id="artist.id"
-        :image="artist.images[0] ? (artist.images[2] ? artist.images[2].url : artist.images[0].url) : '/artist-img.svg'"
-        :name="artist.name"
-      ></Artist>
-    </main>
-    <transition name="slide-fade">
-      <footer v-if="counter > 0" class="artists-footer">
-        <router-link
-          @click="saveExploreArtists($event)"
-          to="explore"
-          class="btn launch-btn"
-        >
-          <span class="launch-text">{{locationLoading ? 'Chargement...' : 'Lancer le tour du monde'}}</span>
-          <span class="selection-length">{{ counter }}</span>
-        </router-link>
-      </footer>
-    </transition>
-  </div>
+      </header>
+      <main class="artists-list">
+        <div class="loader" v-if="!artists[0]">Chargement...</div>
+        <Artist
+          v-for="artist in artists"
+          :key="artist.id"
+          :id="artist.id"
+          :image="
+            artist.images[0]
+              ? artist.images[2]
+                ? artist.images[2].url
+                : artist.images[0].url
+              : '/artist-img.svg'
+          "
+          :name="artist.name"
+        ></Artist>
+      </main>
+      <transition name="slide-fade">
+        <footer v-if="counter > 0" class="artists-footer">
+          <router-link
+            @click="saveExploreArtists($event)"
+            to="explore"
+            class="btn launch-btn"
+          >
+            <span class="launch-text">{{
+              locationLoading ? "Chargement..." : "Lancer le tour du monde"
+            }}</span>
+            <span class="selection-length">{{ counter }}</span>
+          </router-link>
+        </footer>
+      </transition>
+    </div>
 </template>
 
 <script>
 // @ is an alias to /src
 import Artist from "@/components/Artist.vue";
-import { API_URL } from '@/assets/variables.js';
+import { API_URL } from "@/assets/variables.js";
 
 export default {
   name: "Home",
