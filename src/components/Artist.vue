@@ -6,7 +6,20 @@
         <img class="artist-img" :src="image" />
         <div class="img-layer">
           <div class="img-overlay"></div>
-          <i class="fas fa-check"></i>
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            role="img"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 512 512"
+            class="check-svg"
+          >
+            <path
+              fill="currentColor"
+              d="M173.898 439.404l-166.4-166.4c-9.997-9.997-9.997-26.206 0-36.204l36.203-36.204c9.997-9.998 26.207-9.998 36.204 0L192 312.69 432.095 72.596c9.997-9.997 26.207-9.997 36.204 0l36.203 36.204c9.997 9.997 9.997 26.206 0 36.204l-294.4 294.401c-9.998 9.997-26.207 9.997-36.204-.001z"
+              class=""
+            ></path>
+          </svg>
         </div>
       </div>
       <span class="artist-name">{{ name }}</span>
@@ -24,7 +37,7 @@
 </template>
 
 <script>
-import { API_URL } from '@/assets/variables.js';
+import { API_URL } from "@/assets/variables.js";
 
 export default {
   name: "Artist",
@@ -37,7 +50,7 @@ export default {
   data() {
     return {
       checked: Number,
-      relatedArtists: []
+      relatedArtists: [],
     };
   },
   watch: {
@@ -46,9 +59,13 @@ export default {
       if (checked) {
         this.showRelatedArtists(this.id);
         this.fetchPreview(this.id);
-        parent.exploreArtists.forEach(artist =>{
-          if(artist.id == this.id) parent.exploreArtists.splice(parent.exploreArtists.indexOf(artist), 1);
-        })
+        parent.exploreArtists.forEach((artist) => {
+          if (artist.id == this.id)
+            parent.exploreArtists.splice(
+              parent.exploreArtists.indexOf(artist),
+              1
+            );
+        });
         parent.counter++;
       } else {
         parent.removeExploreArtists(this.relatedArtists);
@@ -92,22 +109,23 @@ export default {
         });
       });
     },
-    async fetchLocation(index){
-      let parent = this.getParent('Home');
-      if(parent.locationLoading) await this.wait(1000);
+    async fetchLocation(index) {
+      let parent = this.getParent("Home");
+      if (parent.locationLoading) await this.wait(1000);
       parent.locationLoading = true;
       console.log(this.relatedArtists[index]);
-      fetch(API_URL + "artist/location/" + this.relatedArtists[index].name).then(response => {
-        response.json().then(location => {
+      fetch(
+        API_URL + "artist/location/" + this.relatedArtists[index].name
+      ).then((response) => {
+        response.json().then((location) => {
           this.relatedArtists[index].location = location;
           parent.locationLoading = false;
-        })
-      })
+        });
+      });
     },
     wait(milliseconds) {
-    return new Promise(resolve => setTimeout(resolve, milliseconds));
-}
-
+      return new Promise((resolve) => setTimeout(resolve, milliseconds));
+    },
   },
   mounted() {
     this.audio = this.getParent("Home").audio;
@@ -161,11 +179,12 @@ export default {
   align-items: center;
 }
 
-.img-layer i {
+.img-layer .check-svg {
   position: absolute;
-  font-size: var(--font-size-30);
   color: #fff;
   opacity: 0;
+  width: 40px;
+  height: 40px;
   transition: opacity ease-in-out 0.3s;
 }
 
@@ -181,7 +200,7 @@ export default {
   opacity: 0.5;
 }
 
-.artist-check:checked + .artist-img-container i {
+.artist-check:checked + .artist-img-container .check-svg {
   opacity: 1;
 }
 

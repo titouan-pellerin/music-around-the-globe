@@ -2,9 +2,194 @@
   <div class="explore">
     <div class="spin-container loading"></div>
     <canvas class="loading" id="globeCanvas"></canvas>
-    <div class="artist-container"></div>
+    <div class="artist-container">
+      <div class="controls-container">
+        <a href="#" class="artist-control close-control">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 14 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M8.48514 7.00022L12.9723 2.51308L13.8976 1.58774C14.0341 1.45123 14.0341 1.22941 13.8976 1.09291L12.9075 0.102816C12.771 -0.0336885 12.5492 -0.0336885 12.4127 0.102816L7.00022 5.5153L1.58774 0.102378C1.45123 -0.0341261 1.22941 -0.0341261 1.09291 0.102378L0.102378 1.09247C-0.0341261 1.22898 -0.0341261 1.4508 0.102378 1.5873L5.5153 7.00022L0.102378 12.4127C-0.0341261 12.5492 -0.0341261 12.771 0.102378 12.9075L1.09247 13.8976C1.22898 14.0341 1.4508 14.0341 1.5873 13.8976L7.00022 8.48514L11.4874 12.9723L12.4127 13.8976C12.5492 14.0341 12.771 14.0341 12.9075 13.8976L13.8976 12.9075C14.0341 12.771 14.0341 12.5492 13.8976 12.4127L8.48514 7.00022Z"
+              fill="white"
+            />
+          </svg>
+          <span>Fermer</span>
+        </a>
+        <a href="#" class="artist-control next-control">
+          <span>Suivant</span>
+          <svg
+            width="8"
+            height="14"
+            viewBox="0 0 8 14"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M0.772004 0.190662L0.153285 0.809349C0.00684766 0.955787 0.00684766 1.19322 0.153285 1.33969L5.80013 7.00001L0.153285 12.6603C0.00684766 12.8068 0.00684766 13.0442 0.153285 13.1907L0.772004 13.8094C0.918441 13.9558 1.15588 13.9558 1.30235 13.8094L7.84653 7.26519C7.99297 7.11875 7.99297 6.88132 7.84653 6.73485L1.30235 0.190662C1.15588 0.0441934 0.918441 0.0441934 0.772004 0.190662Z"
+              fill="white"
+            />
+          </svg>
+        </a>
+      </div>
+      <div v-if="selectedArtist.name" class="artist-content">
+        <header class="artist-header">
+          <img
+            :src="
+              selectedArtist.images[0]
+                ? selectedArtist.images[2]
+                  ? selectedArtist.images[2].url
+                  : selectedArtist.images[0].url
+                : '/artist-img.svg'
+            "
+          />
+          <h1>{{ selectedArtist.name }}</h1>
+        </header>
+      </div>
+    </div>
   </div>
 </template>
+
+
+<style>
+body {
+  overflow: hidden;
+}
+
+.explore {
+  display: flex;
+}
+
+canvas {
+  cursor: grab;
+  margin-left: 0;
+  transition: all ease-in-out 2s;
+}
+
+canvas:active {
+  cursor: grabbing;
+}
+
+canvas.marker {
+  cursor: pointer;
+}
+
+canvas.loading {
+  display: none;
+}
+
+canvas.reduced {
+  margin-left: -40%;
+  cursor: pointer;
+}
+
+.spin-container {
+  width: 100vw;
+  height: 100vh;
+  display: none;
+}
+
+.spin-container.loading {
+  display: block;
+}
+
+.artist-container {
+  width: 40%;
+  height: 100vh;
+  z-index: 100;
+  background: #2e2e2e;
+  transition: all ease-in-out 2s;
+  position: relative;
+  margin-right: -40%;
+}
+
+.artist-container.expanded {
+  margin-right: 0;
+}
+
+.controls-container {
+  margin: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.artist-control {
+  display: flex;
+  align-items: center;
+  color: #fff;
+  transition-duration: 0.3s;
+  text-decoration: none;
+}
+
+.artist-control path,
+.artist-control svg {
+  transition-duration: 0.3s;
+}
+
+.close-control:hover {
+  color: #ff4141;
+}
+
+.close-control:hover path {
+  fill: #ff4141;
+}
+
+.close-control:hover svg {
+  border-color: #ff4141;
+}
+
+.close-control {
+  left: 20px;
+}
+
+.close-control span {
+  margin-left: 15px;
+}
+
+.expanded .next-control {
+  right: 20px;
+}
+
+.next-control span {
+  margin-right: 15px;
+}
+
+.next-control:hover {
+  color: var(--accent-color);
+}
+
+.next-control:hover path {
+  fill: var(--accent-color);
+}
+
+.next-control:hover svg {
+  border-color: var(--accent-color);
+}
+
+.artist-control span {
+  font-size: var(--font-size-15);
+}
+
+.artist-control svg {
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  border: solid 2px #fff;
+  padding: 10px;
+}
+
+.artist-content{
+  margin: 20px;
+}
+
+.artist-header{
+  display: flex;
+  align-items: center;
+}
+</style>
 
 <script>
 import * as THREE from "three";
@@ -12,11 +197,15 @@ import * as TWEEN from "@tweenjs/tween.js";
 import * as lottie from "lottie-web";
 import { OrbitControls } from "@/assets/OrbitControls";
 
-
 let earth;
 
 export default {
   name: "Explore",
+  data() {
+    return {
+      selectedArtist: {},
+    };
+  },
   mounted() {
     /**
      * Variables
@@ -192,14 +381,15 @@ export default {
       mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
     }
 
+    let self = this;
     function onDocumentMouseDown(event) {
       event.preventDefault();
       document.removeEventListener("mousemove", onDocumentMouseMove);
       globeCanvas.classList.add("reduced");
       document.querySelector(".artist-container").classList.add("expanded");
-      controls.autoRotate = false;
+      controls.enabled = false;
 
-      console.log(INTERSECTED.parent.userData.artist);
+      self.selectedArtist = INTERSECTED.parent.userData.artist;
 
       new TWEEN.Tween({
         x: camera.position.x,
@@ -208,9 +398,9 @@ export default {
       })
         .to(
           {
-            x: INTERSECTED.parent.position.x,
-            y: INTERSECTED.parent.position.y,
-            z: INTERSECTED.parent.position.z,
+            x: INTERSECTED.parent.position.x - 0.5,
+            y: INTERSECTED.parent.position.y + 0.5,
+            z: INTERSECTED.parent.position.z + 0.5,
           },
           2000
         )
@@ -220,7 +410,6 @@ export default {
         })
         .start();
 
-      console.log(INTERSECTED.parent);
       document.removeEventListener("mousedown", onDocumentMouseDown);
     }
 
@@ -339,57 +528,3 @@ export default {
   },
 };
 </script>
-
-<style>
-body {
-  overflow: hidden;
-}
-
-.explore {
-  display: flex;
-}
-
-canvas {
-  cursor: grab;
-  margin-left: 0;
-  transition: all ease-in-out 2s;
-}
-
-canvas:active {
-  cursor: grabbing;
-}
-
-canvas.marker {
-  cursor: pointer;
-}
-
-canvas.loading {
-  display: none;
-}
-
-canvas.reduced {
-  margin-left: -30%;
-}
-
-.spin-container {
-  width: 100vw;
-  height: 100vh;
-  display: none;
-}
-
-.spin-container.loading {
-  display: block;
-}
-
-.artist-container {
-  width: 0;
-  height: 100vh;
-  z-index: 100;
-  background: var(--background-color);
-  transition: all ease-in-out 2s;
-}
-
-.artist-container.expanded {
-  width: 30%;
-}
-</style>
